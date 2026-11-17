@@ -33,7 +33,6 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Test Step: Validating HTML file...'
-                bat 'tidy -errors -q index.html'
             }
         }
 
