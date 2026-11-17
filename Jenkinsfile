@@ -1,25 +1,16 @@
+
 pipeline {
     agent any
-
-    // Requires the Jenkins GitHub plugin and a GitHub push webhook.
-    triggers {
-        githubPush()
-    }
-
-    options {
-        // The Checkout stage below performs the SCM checkout explicitly.
-        skipDefaultCheckout(true)
-    }
 
     environment {
         DEPLOY_DIR = 'C:\\inetpub\\wwwroot'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                echo 'Checking out project from configured GitHub SCM...'
-                checkout scm
+                echo 'Checking out project from GitHub...'
             }
         }
 
@@ -32,17 +23,23 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo 'Test Step: Validating HTML file...'
+                echo 'Test Step: Validating project files...'
+                bat '''
+                    if not exist index.html exit /b 1
+                    if not exist style.css exit /b 1
+                    if not exist script.js exit /b 1
+                    echo All required files are present.
+                '''
             }
         }
 
         stage('Deploy') {
             steps {
-                echo "Deploying web application to ${DEPLOY_DIR}..."
-                bat 'if not exist "%DEPLOY_DIR%" mkdir "%DEPLOY_DIR%"'
-                bat 'copy /Y index.html "%DEPLOY_DIR%"'
-                bat 'copy /Y style.css "%DEPLOY_DIR%"'
-                bat 'copy /Y script.js "%DEPLOY_DIR%"'
+                echo 'Deploying web application...'
+                bat '''
+                    if not exist "%DEPLOY_DIR%" mkdir "%DEPLOY_DIR%"
+                    xcopy /Y /E index.html style.css script.js "%DEPLOY_DIR%\\"
+                '''
             }
         }
     }
@@ -52,6 +49,7 @@ pipeline {
             echo 'CI/CD Pipeline completed successfully!'
             echo 'Visit: http://localhost/'
         }
+
         failure {
             echo 'Pipeline failed. Check the console output.'
         }
