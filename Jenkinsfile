@@ -42,7 +42,18 @@ pipeline {
                 '''
             }
         }
+    }stage('Deploy') {
+    steps {
+        echo 'Deploying web application...'
+        bat '''
+            if not exist "%DEPLOY_DIR%" mkdir "%DEPLOY_DIR%"
+            copy /Y index.html "%DEPLOY_DIR%"
+            copy /Y style.css "%DEPLOY_DIR%"
+            copy /Y script.js "%DEPLOY_DIR%"
+            echo Deployment completed successfully.
+        '''
     }
+}
 
     post {
         success {
